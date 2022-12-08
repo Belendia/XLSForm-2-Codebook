@@ -1,0 +1,6 @@
+python-dotenv
+minify-html
+openpyxl
+pandas
+tabulate
+xlrd
