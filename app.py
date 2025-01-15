@@ -7,7 +7,7 @@ def xlsxform_to_markdown(xlsx_path, output_path):
     """
     Converts an XLSForm into a Markdown codebook, categorizing questions under groups and repeats, 
     with collapsible groups and consistent indentation.
-    
+
     Args:
         xlsx_path (str): Path to the XLSForm (Excel file).
         output_path (str): Path to save the Markdown file.
@@ -28,9 +28,9 @@ def xlsxform_to_markdown(xlsx_path, output_path):
 
     # Load choices sheet if it exists
     try:
-        choices_df = xls.parse('choices', converters = {
+        choices_df = xls.parse('choices', converters={
             'name': lambda x: str(x) if pd.notnull(x) else None
-            })
+        })
     except:
         choices_df = None
 
@@ -52,8 +52,9 @@ def xlsxform_to_markdown(xlsx_path, output_path):
         if question_type.startswith('begin '):
             group_name = question_name or f"Unnamed {question_type.split(' ')[-1]}"
             group_label = question_label or group_name
-            markdown_lines.append(f"<details>")
-            markdown_lines.append(f"<summary><h2>{group_label} ({question_type.split(' ')[-1]})</h2></summary>")
+            markdown_lines.append(f"<details open>")
+            markdown_lines.append(
+                f"<summary><h2>{group_label} ({question_type.split(' ')[-1]})</h2></summary>")
             markdown_lines.append("")
             markdown_lines.append(f"- **Type**: {question_type}")
             if pd.isna(question_relevant) == False:
@@ -74,7 +75,8 @@ def xlsxform_to_markdown(xlsx_path, output_path):
 
         # Handle regular questions
         if question_name and question_label:
-            indent = "  " * 0 #if len(group_stack) == 0 else 2 #len(group_stack)  # Indent based on the depth of nesting
+            # if len(group_stack) == 0 else 2 #len(group_stack)  # Indent based on the depth of nesting
+            indent = "  " * 0
             markdown_lines.append(f"{indent}### {question_name}")
             markdown_lines.append(f"{indent}- **Label**: {question_label}")
             markdown_lines.append(f"{indent}- **Type**: {question_type}")
@@ -85,7 +87,7 @@ def xlsxform_to_markdown(xlsx_path, output_path):
             if pd.isna(question_calculate) == False:
                 calc = re.sub(r'[\$\{\}]', '', str(question_calculate))
                 markdown_lines.append(f"{indent}- **Calculate**: {calc}")
-            
+
             # Add choices for select_one or select_multiple questions
             if choices_df is not None and question_type.startswith(('select_one', 'select_multiple')):
                 list_name = question_type.split(' ')[-1]
@@ -94,8 +96,10 @@ def xlsxform_to_markdown(xlsx_path, output_path):
                     markdown_lines.append(f"{indent}- **Choices**:")
                     for _, choice_row in choices.iterrows():
                         choice_name = choice_row.get('name', '')
-                        choice_label = choice_row.get('label::English (en)', '')
-                        markdown_lines.append(f"{indent}  - {choice_name}: {choice_label}")
+                        choice_label = choice_row.get(
+                            'label::English (en)', '')
+                        markdown_lines.append(
+                            f"{indent}  - {choice_name}: {choice_label}")
 
             markdown_lines.append("")  # Add a blank line for readability
 
